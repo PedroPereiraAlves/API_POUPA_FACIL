@@ -1,3 +1,6 @@
+using API_POUPA_FACIL.Interfaces;
+using API_POUPA_FACIL.Repository;
+
 namespace API_POUPA_FACIL
 {
     public class Program
@@ -6,18 +9,24 @@ namespace API_POUPA_FACIL
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
+
+            builder.Services.AddScoped<IUsuarios, UsuarioRepository>();
+
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-
-            app.UseHttpsRedirection();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();//http://localhost:5159/swagger
+            }
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
