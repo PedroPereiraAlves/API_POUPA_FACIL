@@ -5,14 +5,17 @@ namespace API_POUPA_FACIL.Context
 {
     public class BaseContext : DbContext
     {
+        public BaseContext(DbContextOptions<BaseContext> options) : base(options)
+        {
+        }
         public DbSet<Usuarios> Usuarios { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql(
-            "Server=localhost;" +
-            "Port=5432;Database=APP_POUPA_FACIL;" +
-            "User Id=postgres;" +
-            "Password=995736;");
+        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        // => optionsBuilder.UseNpgsql(
+        //     "Server=localhost;" +
+        //     "Port=5432;Database=APP_POUPA_FACIL;" +
+        //     "User Id=postgres;" +
+        //     "Password=995736;");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
