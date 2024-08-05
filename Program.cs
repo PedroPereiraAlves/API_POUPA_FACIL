@@ -1,6 +1,8 @@
+using API_POUPA_FACIL.Context;
 using API_POUPA_FACIL.Interfaces;
 using API_POUPA_FACIL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -12,11 +14,11 @@ namespace API_POUPA_FACIL
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            //VERSÃO PARA QUANTO IMPLEMENTARMOS UMA VARIAVEL DE AMBIENTE
-            //var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY") ?? 
-            //    throw new InvalidOperationException("JWT_KEY not found"));
+            //VERSï¿½O PARA QUANTO IMPLEMENTARMOS UMA VARIAVEL DE AMBIENTE
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY") ?? 
+               throw new InvalidOperationException("JWT_KEY not found"));
 
-            var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
+            // var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
 
             builder.Services.AddAuthentication(options =>
@@ -36,6 +38,11 @@ namespace API_POUPA_FACIL
                     ValidateAudience = false
                 };
             });
+
+            var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
+                throw new InvalidOperationException("DATABASE_URL not found");
+            builder.Services.AddDbContext<BaseContext>(options =>
+                options.UseNpgsql(connectionString));
 
             builder.Services.AddControllers();
 
