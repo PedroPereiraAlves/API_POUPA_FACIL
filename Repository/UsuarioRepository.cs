@@ -9,7 +9,13 @@ namespace API_POUPA_FACIL.Repository
 {
     public class UsuarioRepository : IUsuarios
     {
-        private readonly BaseContext _context = new BaseContext();
+        private readonly BaseContext _context;
+
+        public UsuarioRepository(BaseContext context)
+        {
+            _context = context;
+        }
+
 
         public async Task<Usuarios> AdicionarUsuario(Usuarios usuario)
         {
