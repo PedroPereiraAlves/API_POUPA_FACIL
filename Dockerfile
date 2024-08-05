@@ -1,5 +1,5 @@
-# Use a imagem base do .NET SDK
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# Use a imagem base do .NET SDK 7.0
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /app
 
 # Copie os arquivos de projeto e restaure as dependências
@@ -10,8 +10,8 @@ RUN dotnet restore
 COPY . .
 RUN dotnet publish -c Release -o out
 
-# Use a imagem base do runtime do .NET
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+# Use a imagem base do runtime do .NET 7.0
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /app/out .
 
