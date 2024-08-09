@@ -39,8 +39,9 @@ namespace API_POUPA_FACIL
                 };
             });
 
-           var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-                throw new InvalidOperationException("DATABASE_URL not found locally");
+           var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") 
+                ?? builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("No database connection string found.");
 
             builder.Services.AddDbContext<BaseContext>(options =>
                 options.UseNpgsql(connectionString));
