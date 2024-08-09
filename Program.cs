@@ -45,8 +45,13 @@ namespace API_POUPA_FACIL
             if (builder.Environment.IsDevelopment())
                 connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             else
-            {
+            {      
                 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+                if (databaseUrl == null)
+                {
+                    throw new InvalidOperationException("DATABASE_URL environment variable is not set.");
+                }
 
                 var databaseUri = new Uri(databaseUrl);
                 var userInfo = databaseUri.UserInfo.Split(':');
@@ -54,9 +59,9 @@ namespace API_POUPA_FACIL
                 var connectionStringBuilder = new NpgsqlConnectionStringBuilder
                 {
                     Host = databaseUri.Host,
-                    Port = databaseUri.Port,
+                    Port = databaseUri.IsDefaultPort ? 5432 : databaseUri.Port, 
                     Username = userInfo[0],
-                    Password = userInfo[1],
+                    Password = userInfo.Length > 1 ? userInfo[1] : string.Empty,
                     Database = databaseUri.LocalPath.TrimStart('/')
                 };
 
