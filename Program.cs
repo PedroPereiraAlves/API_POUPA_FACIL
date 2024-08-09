@@ -4,6 +4,7 @@ using API_POUPA_FACIL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using System.Text;
 
 namespace API_POUPA_FACIL
@@ -39,9 +40,28 @@ namespace API_POUPA_FACIL
                 };
             });
 
-           var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") 
-                ?? builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("No database connection string found.");
+           string connectionString;
+
+            if (builder.Environment.IsDevelopment())
+                connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            else
+            {
+                var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+                var databaseUri = new Uri(databaseUrl);
+                var userInfo = databaseUri.UserInfo.Split(':');
+
+                var connectionStringBuilder = new NpgsqlConnectionStringBuilder
+                {
+                    Host = databaseUri.Host,
+                    Port = databaseUri.Port,
+                    Username = userInfo[0],
+                    Password = userInfo[1],
+                    Database = databaseUri.LocalPath.TrimStart('/')
+                };
+
+                connectionString = connectionStringBuilder.ToString();
+            }
 
             builder.Services.AddDbContext<BaseContext>(options =>
                 options.UseNpgsql(connectionString));
