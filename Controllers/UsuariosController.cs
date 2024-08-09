@@ -25,6 +25,7 @@ namespace API_POUPA_FACIL.Controllers
         }
 
         [HttpPost]
+        [Route("AdicionarUsuario")]
         public async Task<IActionResult> AdicionarUsuario([FromBody] UsuarioCreateViewModel usuarioViewModel)
         {
             if (!ModelState.IsValid)
@@ -48,7 +49,8 @@ namespace API_POUPA_FACIL.Controllers
             return Ok(new { message = "Usuário cadastrado com sucesso", usuario.Nome });
         }
 
-        [HttpPost("login")]
+        [HttpPost]
+        [Route("Login")]
         public async Task<IActionResult> Login([FromBody] RequestLoginDTO loginRequest)
         {
             if (!ModelState.IsValid)

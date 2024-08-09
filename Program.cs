@@ -15,8 +15,8 @@ namespace API_POUPA_FACIL
             var builder = WebApplication.CreateBuilder(args);
 
             //VERS�O PARA QUANTO IMPLEMENTARMOS UMA VARIAVEL DE AMBIENTE
-            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY") ?? 
-               throw new InvalidOperationException("JWT_KEY not found"));
+            var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? 
+                throw new InvalidOperationException("JWT_KEY not found locally"));
 
             // var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
@@ -39,8 +39,9 @@ namespace API_POUPA_FACIL
                 };
             });
 
-            var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
-                throw new InvalidOperationException("DATABASE_URL not found");
+           var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+                throw new InvalidOperationException("DATABASE_URL not found locally");
+
             builder.Services.AddDbContext<BaseContext>(options =>
                 options.UseNpgsql(connectionString));
 
