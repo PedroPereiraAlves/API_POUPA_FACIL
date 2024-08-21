@@ -9,5 +9,8 @@
         public required string Cpf { get; set; }
         public required string Senha { get; set; }
         public DateTime DataCriacao { get; set; }
+        public ICollection<RendaAtiva> RendasAtiva {get; set;}
+
+        public ICollection<GastosUsuario> GastosUsuario {get; set;}
     }
 }

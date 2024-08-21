@@ -45,7 +45,6 @@ namespace API_POUPA_FACIL.Controllers
 
             var usuario = await _usuariosRepository.AdicionarUsuario(novoUsuario);
 
-    
             return Ok(new { message = "Usuário cadastrado com sucesso", usuario.Nome });
         }
 
