@@ -1,6 +1,7 @@
 using API_POUPA_FACIL.Context;
 using API_POUPA_FACIL.Interfaces;
 using API_POUPA_FACIL.Repository;
+using API_POUPA_FACIL.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -41,6 +42,7 @@ namespace API_POUPA_FACIL
             });
 
            string connectionString;
+           
 
             if (builder.Environment.IsDevelopment())
                 connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -69,11 +71,14 @@ namespace API_POUPA_FACIL
             }
 
             builder.Services.AddDbContext<BaseContext>(options =>
-                options.UseNpgsql(connectionString));
+                options.UseNpgsql(connectionString),
+                ServiceLifetime.Scoped);
 
             builder.Services.AddControllers();
 
-            builder.Services.AddScoped<IUsuarios, UsuarioRepository>();
+            builder.Services.AddScoped<IUsuariosRepository, UsuarioRepository>();
+            builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+            builder.Services.AddScoped<IEmpresaService,EmpresaService>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

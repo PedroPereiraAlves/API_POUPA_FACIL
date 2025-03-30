@@ -1,6 +1,7 @@
 ﻿using API_POUPA_FACIL.Classes;
 using API_POUPA_FACIL.Interfaces;
 using API_POUPA_FACIL.Repository;
+using API_POUPA_FACIL.Services;
 using API_POUPA_FACIL.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +16,11 @@ namespace API_POUPA_FACIL.Controllers
     [ApiController]
     public class UsuariosController : ControllerBase
     {
-        private readonly IUsuarios _usuariosRepository;
-        private readonly IConfiguration _configuration;
+        private readonly UsuarioService _usuariosServices;
 
-        public UsuariosController(IUsuarios usuariosRepository, IConfiguration configuration)
+        public UsuariosController(UsuarioService usuariosServices)
         {
-            _usuariosRepository = usuariosRepository;
-            _configuration = configuration;
+            _usuariosServices = usuariosServices;
         }
 
         [HttpPost]
@@ -43,7 +42,7 @@ namespace API_POUPA_FACIL.Controllers
                 DataCriacao = DateTime.UtcNow
             };
 
-            var usuario = await _usuariosRepository.AdicionarUsuario(novoUsuario);
+            var usuario = await _usuariosServices.AdicionarUsuario(novoUsuario);
 
             return Ok(new { message = "Usuário cadastrado com sucesso", usuario.Nome });
         }
@@ -55,32 +54,14 @@ namespace API_POUPA_FACIL.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var usuario = await _usuariosRepository.AuthenticaUsuario(loginRequest.Email, loginRequest.Senha);
+            var usuario = await _usuariosServices.AuthenticaUsuario(loginRequest.Email, loginRequest.Senha);
 
             if(usuario is null)
                 return Unauthorized(new { message = "Email ou senha inválidos" });
 
-            var token = GenerateJwtToken(usuario);
+            var token = _usuariosServices.GenerateJwtToken(usuario);
 
             return Ok(new { token });
-
-        }
-
-        private string GenerateJwtToken(Usuarios usuario)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[] {
-            new Claim(ClaimTypes.Name, usuario.Codigo.ToString()),
-            new Claim(ClaimTypes.Email, usuario.Email)
-        }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
         }
 
     }

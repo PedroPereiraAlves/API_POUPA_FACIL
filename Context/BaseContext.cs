@@ -12,6 +12,7 @@ namespace API_POUPA_FACIL.Context
         public DbSet<CategoriasGastos> CategoriasGastos { get; set; }
         public DbSet<GastosUsuario> GastosUsuario { get; set; }
         public DbSet<RendaAtiva> RendaAtiva { get; set; }
+        public DbSet<Empresa> Empresa { get; set; }
 
 
         // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -133,9 +134,31 @@ namespace API_POUPA_FACIL.Context
 
             #endregion CategoriasGastos
 
+            #region Empresa
+
+            modelBuilder.Entity<Empresa>()
+                    .HasKey(x => x.Codigo);
+
+            modelBuilder.Entity<Empresa>()
+                    .ToTable("empresa");
+
+            modelBuilder.Entity<Empresa>()
+                    .Property(s => s.Codigo)
+                    .HasColumnName("id");
+
+            modelBuilder.Entity<Empresa>()
+                    .Property(s => s.Cnpj)
+                    .HasColumnName("cnpj");
+
+            modelBuilder.Entity<Empresa>()
+                    .Property(s => s.Nome)
+                    .HasColumnName("nome");
+
+            #endregion Empresa
+
             #region Relacionamentos
 
-                modelBuilder.Entity<Usuarios>()
+            modelBuilder.Entity<Usuarios>()
                     .HasMany(s => s.RendasAtiva)
                     .WithOne(r => r.Usuario)
                     .HasForeignKey(r => r.UsuarioCodigo);
@@ -151,7 +174,6 @@ namespace API_POUPA_FACIL.Context
                     .HasForeignKey(g => g.UsuarioCodigo);
 
             #endregion Relacionamentos
-
         }
     }
 }

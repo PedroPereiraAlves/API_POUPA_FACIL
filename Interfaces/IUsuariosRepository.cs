@@ -2,7 +2,7 @@
 
 namespace API_POUPA_FACIL.Interfaces
 {
-    public interface IUsuarios
+    public interface IUsuariosRepository
     {
         Task<Usuarios> AdicionarUsuario(Usuarios usuario);
         Task<Usuarios> AuthenticaUsuario(string email, string senha);

@@ -1,13 +1,11 @@
 ﻿using API_POUPA_FACIL.Interfaces;
 using API_POUPA_FACIL.Context;
 using API_POUPA_FACIL.Classes;
-using API_POUPA_FACIL.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Connections;
 
 namespace API_POUPA_FACIL.Repository
 {
-    public class UsuarioRepository : IUsuarios
+    public class UsuarioRepository : IUsuariosRepository
     {
         private readonly BaseContext _context;
 
@@ -15,7 +13,6 @@ namespace API_POUPA_FACIL.Repository
         {
             _context = context;
         }
-
 
         public async Task<Usuarios> AdicionarUsuario(Usuarios usuario)
         {
@@ -39,6 +36,5 @@ namespace API_POUPA_FACIL.Repository
 
             return Usuario;
         }
-
     }
 }
