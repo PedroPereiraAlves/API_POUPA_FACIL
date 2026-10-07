@@ -1,39 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using API_POUPA_FACIL.Services;
-using API_POUPA_FACIL.Classes;
-using API_POUPA_FACIL.ViewModels;
+﻿using API_POUPA_FACIL.Dtos;
 using API_POUPA_FACIL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace API_POUPA_FACIL.Controllers
+namespace API_POUPA_FACIL.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("api/empresas")]
+public class EmpresasController : ControllerBase
 {
-    public class EmpresasController : ControllerBase
+    private readonly IEmpresaService _empresas;
+
+    public EmpresasController(IEmpresaService empresas)
     {
-        private IEmpresaService _empresaServices;
-        public EmpresasController(IEmpresaService empresaService)
-        {
-            _empresaServices = empresaService;
-        }
+        _empresas = empresas;
+    }
 
-        [HttpPost]
-        [Route("AdicionarEmpresa")]
-        public async Task<IActionResult> AdicionarEmpresa([FromBody] EmpresaCreateDto empresa)
-        {
-            if(!ModelState.IsValid)
-                return Unauthorized(ModelState);
-
-            var novaEmpresa = new Empresa
-            {
-                Nome = empresa.Nome,
-                Cnpj = empresa.Cnpj
-            };
-
-            var command = await _empresaServices.AdicionarEmpresa(novaEmpresa);
-
-            if (command is Empresa)
-                return Ok("Empresa Cadastrada com sucesso!");
-
-
-            return BadRequest("A empresa não foi cadastrada");
-        }
+    [HttpPost]
+    [HttpPost("AdicionarEmpresa")]
+    [HttpPost("/AdicionarEmpresa")]
+    [ProducesResponseType(typeof(EmpresaResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cadastrar(
+        [FromBody] EmpresaCreateDto request,
+        CancellationToken cancellationToken)
+    {
+        var empresa = await _empresas.CadastrarAsync(request, cancellationToken);
+        return Created($"/api/empresas/{empresa.Codigo}", empresa);
     }
 }
