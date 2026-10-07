@@ -4,6 +4,6 @@ namespace API_POUPA_FACIL.Classes
     {
         public int Codigo {get; set;}
         public required string NomeCategoria {get; set;}
-        public ICollection<GastosUsuario> GastosUsuario { get; set; }
+        public ICollection<GastosUsuario> GastosUsuario { get; set; } = new List<GastosUsuario>();
     }
 }

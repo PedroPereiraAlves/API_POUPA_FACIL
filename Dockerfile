@@ -1,20 +1,16 @@
-# Use a imagem base do .NET SDK 7.0
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
 
-# Copie os arquivos de projeto e restaure as dependências
-COPY *.csproj .
-RUN dotnet restore
+COPY API_POUPA_FACIL.csproj ./
+RUN dotnet restore API_POUPA_FACIL.csproj
 
-# Copie todos os arquivos e construa a aplicação
 COPY . .
-RUN dotnet publish -c Release -o out
+RUN dotnet publish API_POUPA_FACIL.csproj -c Release -o /app/publish --no-restore
 
-# Use a imagem base do runtime do .NET 7.0
-FROM mcr.microsoft.com/dotnet/aspnet:7.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-COPY --from=build /app/out .
+COPY --from=build /app/publish .
 
-# Exponha a porta da aplicação
-EXPOSE 80
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
 ENTRYPOINT ["dotnet", "API_POUPA_FACIL.dll"]

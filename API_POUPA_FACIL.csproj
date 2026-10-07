@@ -1,23 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>api-poupa-facil-7f3c2a1b-4d8e-4c1a-9b6f-2e5d8a0c4b17</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
+    <InternalsVisibleTo Include="API_POUPA_FACIL.Tests" />
+    <Compile Remove="API_POUPA_FACIL.Tests/**" />
+    <Content Remove="API_POUPA_FACIL.Tests/**" />
+    <EmbeddedResource Remove="API_POUPA_FACIL.Tests/**" />
+    <None Remove="API_POUPA_FACIL.Tests/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
   </ItemGroup>
 
 </Project>

@@ -7,6 +7,6 @@
         public required string RendaDescricao { get; set;}
         public required double ValorRenda {  get; set;}
 
-        public Usuarios Usuario {get; set;}
+        public Usuarios Usuario { get; set; } = null!;
     }
 }

@@ -12,15 +12,7 @@ namespace API_POUPA_FACIL.Context
         public DbSet<CategoriasGastos> CategoriasGastos { get; set; }
         public DbSet<GastosUsuario> GastosUsuario { get; set; }
         public DbSet<RendaAtiva> RendaAtiva { get; set; }
-        public DbSet<Empresa> Empresa { get; set; }
-
-
-        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        // => optionsBuilder.UseNpgsql(
-        //     "Server=localhost;" +
-        //     "Port=5432;Database=APP_POUPA_FACIL;" +
-        //     "User Id=postgres;" +
-        //     "Password=995736;");
+        public DbSet<Empresa> Empresas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

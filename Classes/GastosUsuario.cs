@@ -8,8 +8,8 @@ namespace API_POUPA_FACIL.Classes
         public required double ValorGasto {get; set;}
         public required string DescricaoGasto {get; set;}
 
-        public Usuarios Usuario {get; set;}
+        public Usuarios Usuario { get; set; } = null!;
 
-        public CategoriasGastos CategoriasGastos {get; set;}
+        public CategoriasGastos CategoriasGastos { get; set; } = null!;
     }
 }

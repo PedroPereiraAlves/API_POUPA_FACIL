@@ -1,4 +1,6 @@
-﻿namespace API_POUPA_FACIL.Classes
+﻿using System.Text.Json.Serialization;
+
+namespace API_POUPA_FACIL.Classes
 {
     public class Usuarios
     {
@@ -7,10 +9,12 @@
         public required string Email { get; set; }
         public required string NumeroTelefone {  get; set; }
         public required string Cpf { get; set; }
-        public required string Senha { get; set; }
-        public DateTime DataCriacao { get; set; }
-        public ICollection<RendaAtiva> RendasAtiva {get; set;}
 
-        public ICollection<GastosUsuario> GastosUsuario {get; set;}
+        [JsonIgnore]
+        public required string Senha { get; set; }
+
+        public DateTime DataCriacao { get; set; }
+        public ICollection<RendaAtiva> RendasAtiva { get; set; } = new List<RendaAtiva>();
+        public ICollection<GastosUsuario> GastosUsuario { get; set; } = new List<GastosUsuario>();
     }
 }

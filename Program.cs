@@ -1,109 +1,66 @@
+using API_POUPA_FACIL.Configuration;
 using API_POUPA_FACIL.Context;
-using API_POUPA_FACIL.Interfaces;
-using API_POUPA_FACIL.Repository;
-using API_POUPA_FACIL.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using API_POUPA_FACIL.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Npgsql;
-using System.Text;
+using Microsoft.Extensions.Options;
 
-namespace API_POUPA_FACIL
+var builder = WebApplication.CreateBuilder(args);
+
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://+:{port}");
+
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
+builder.Services.AddPoupaFacil(builder.Configuration, builder.Environment);
+
+var app = builder.Build();
+
+app.UseForwardedHeaders();
+app.UseExceptionHandler();
+app.UseRouting();
+
+if (!app.Environment.IsDevelopment())
 {
-    public class Program
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers.TryAdd("X-Content-Type-Options", "nosniff");
+    headers.TryAdd("Referrer-Policy", "no-referrer");
+    headers.TryAdd("X-Frame-Options", "DENY");
+    await next();
+});
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    // Fail before touching the database when the signing key is missing or revoked.
+    _ = scope.ServiceProvider.GetRequiredService<IOptions<JwtOptions>>().Value;
+
+    if (app.Configuration.GetValue("Database:ApplyMigrations", true))
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-
-            //VERS�O PARA QUANTO IMPLEMENTARMOS UMA VARIAVEL DE AMBIENTE
-            var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? 
-                throw new InvalidOperationException("JWT_KEY not found locally"));
-
-            // var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
-
-
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
-            });
-
-           string connectionString;
-           
-
-            if (builder.Environment.IsDevelopment())
-                connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            else
-            {      
-                var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-                if (databaseUrl == null)
-                {
-                    throw new InvalidOperationException("DATABASE_URL environment variable is not set.");
-                }
-
-                var databaseUri = new Uri(databaseUrl);
-                var userInfo = databaseUri.UserInfo.Split(':');
-
-                var connectionStringBuilder = new NpgsqlConnectionStringBuilder
-                {
-                    Host = databaseUri.Host,
-                    Port = databaseUri.IsDefaultPort ? 5432 : databaseUri.Port, 
-                    Username = userInfo[0],
-                    Password = userInfo.Length > 1 ? userInfo[1] : string.Empty,
-                    Database = databaseUri.LocalPath.TrimStart('/')
-                };
-
-                connectionString = connectionStringBuilder.ToString();
-            }
-
-            builder.Services.AddDbContext<BaseContext>(options =>
-                options.UseNpgsql(connectionString),
-                ServiceLifetime.Scoped);
-
-            builder.Services.AddControllers();
-
-            builder.Services.AddScoped<IUsuariosRepository, UsuarioRepository>();
-            builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
-            builder.Services.AddScoped<IEmpresaService,EmpresaService>();
-
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            var app = builder.Build();
-
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<BaseContext>();
-                dbContext.Database.Migrate();
-            }
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();//http://localhost:5159/swagger
-            }
-
-            app.UseAuthentication();
-
-            app.UseAuthorization();
-
-            app.MapControllers();
-
-            app.Run();
-        }
+        var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DatabaseMigration");
+        var db = scope.ServiceProvider.GetRequiredService<BaseContext>();
+        logger.LogInformation("Applying database migrations.");
+        db.Database.Migrate();
     }
+}
+
+app.Run();
+
+public partial class Program
+{
 }

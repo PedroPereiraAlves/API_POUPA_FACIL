@@ -1,68 +1,56 @@
-﻿using API_POUPA_FACIL.Classes;
+﻿using API_POUPA_FACIL.Dtos;
 using API_POUPA_FACIL.Interfaces;
-using API_POUPA_FACIL.Repository;
-using API_POUPA_FACIL.Services;
-using API_POUPA_FACIL.ViewModels;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 
-namespace API_POUPA_FACIL.Controllers
+namespace API_POUPA_FACIL.Controllers;
+
+[ApiController]
+[Route("api/usuarios")]
+public class UsuariosController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsuariosController : ControllerBase
+    private readonly IUsuarioService _usuarios;
+
+    public UsuariosController(IUsuarioService usuarios)
     {
-        private readonly UsuarioService _usuariosServices;
+        _usuarios = usuarios;
+    }
 
-        public UsuariosController(UsuarioService usuariosServices)
+    [AllowAnonymous]
+    [HttpPost]
+    [HttpPost("AdicionarUsuario")]
+    [ProducesResponseType(typeof(UsuarioResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cadastrar(
+        [FromBody] UsuarioCreateDto request,
+        CancellationToken cancellationToken)
+    {
+        var usuario = await _usuarios.CadastrarAsync(request, cancellationToken);
+        return Created($"/api/usuarios/{usuario.Codigo}", usuario);
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("login")]
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var sessao = await _usuarios.AutenticarAsync(request.Email, request.Senha, cancellationToken);
+        if (sessao is null)
         {
-            _usuariosServices = usuariosServices;
+            return Problem(
+                title: "Credenciais inválidas",
+                detail: "E-mail ou senha inválidos.",
+                statusCode: StatusCodes.Status401Unauthorized);
         }
 
-        [HttpPost]
-        [Route("AdicionarUsuario")]
-        public async Task<IActionResult> AdicionarUsuario([FromBody] UsuarioCreateViewModel usuarioViewModel)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var senhaCriptografada = BCrypt.Net.BCrypt.HashPassword(usuarioViewModel.Senha);
-
-            var novoUsuario = new Usuarios
-            {
-                Nome = usuarioViewModel.Nome,
-                Email = usuarioViewModel.Email,
-                NumeroTelefone = usuarioViewModel.NumeroTelefone,
-                Cpf = usuarioViewModel.Cpf,
-                Senha = senhaCriptografada,
-                DataCriacao = DateTime.UtcNow
-            };
-
-            var usuario = await _usuariosServices.AdicionarUsuario(novoUsuario);
-
-            return Ok(new { message = "Usuário cadastrado com sucesso", usuario.Nome });
-        }
-
-        [HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] RequestLoginDTO loginRequest)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var usuario = await _usuariosServices.AuthenticaUsuario(loginRequest.Email, loginRequest.Senha);
-
-            if(usuario is null)
-                return Unauthorized(new { message = "Email ou senha inválidos" });
-
-            var token = _usuariosServices.GenerateJwtToken(usuario);
-
-            return Ok(new { token });
-        }
-
+        return Ok(sessao);
     }
 }

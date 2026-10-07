@@ -1,9 +1,8 @@
-﻿using API_POUPA_FACIL.Classes;
+﻿using API_POUPA_FACIL.Dtos;
 
-namespace API_POUPA_FACIL.Interfaces
+namespace API_POUPA_FACIL.Interfaces;
+
+public interface IEmpresaService
 {
-    public interface IEmpresaService
-    {
-        Task<Empresa> AdicionarEmpresa(Empresa empresa);
-    }
+    Task<EmpresaResponseDto> CadastrarAsync(EmpresaCreateDto request, CancellationToken cancellationToken);
 }
